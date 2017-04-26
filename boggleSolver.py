@@ -18,20 +18,46 @@ def getValidWords(chars):
 			validWords.append(row[0])
 	return validWords
 
-def findWord(board):
-	currentPos = [0, 0]
-	for row in board:
-		word = ""
-		validWords = []
-		for letter in row:
-			word += letter
-			newValidWords = getValidWords(word)
-			if len(newValidWords) > 0:
-				validWords = newValidWords
-		print(validWords)
+def getLetterAt(coord):
+	try:
+		return board[coord[0]][coord[1]]
+	except:
+		print(coord)
 
-findWord(board)
-#print(getValidWords('cat'))
+def getAdjacentCoords(x, y):
+	coords = []
+
+	if x > 0:
+		coords.append([x-1, y])
+		if y > 0: coords.append([x-1, y-1])
+		if y < BOARD_SIZE-1: coords.append([x-1, y+1])
+	if x < BOARD_SIZE-1:
+		coords.append([x+1, y])
+		if y > 0: coords.append([x+1, y-1])
+		if y < BOARD_SIZE-1: coords.append([x+1, y+1])
+	if y > 0: coords.append([x, y-1])
+	if y < BOARD_SIZE-1: coords.append([x, y+1])
+
+	return coords
+
+def findWord(coords):
+	print("")
+
+def findWords(board):
+	testWord = ""
+	for i in range(BOARD_SIZE):
+		for j in range(BOARD_SIZE):
+			startChar = getLetterAt(i, j)
+			print(startChar)
+
+for x in range(BOARD_SIZE):
+	for y in range(BOARD_SIZE):
+		coords = getAdjacentCoords(x, y)
+		startChar = getLetterAt([x, y])
+
+		for coord in coords:
+			testWord = startChar + getLetterAt(coord)
+			print(getValidWords(testWord))
 
 db.commit()
 db.close()
