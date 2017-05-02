@@ -52,10 +52,13 @@ def getWords(x, y, testWordBase):
 	startChar = getLetterAt([x, y])
 	for coord in coords:
 		testWord = testWordBase + getLetterAt(coord)
-		validWords = getValidWords(testWord)
+		if testWord in words:
+			validWords = words[testWord]
+		else:
+			validWords = getValidWords(testWord)
 		if len(validWords) > 0: words[testWord] = validWords
 
-		if len(testWord) < 2: getWords(coord[0], coord[1], testWord)
+		if len(testWord) < 4: getWords(coord[0], coord[1], testWord)
 
 for x in range(BOARD_SIZE):
 	for y in range(BOARD_SIZE):
