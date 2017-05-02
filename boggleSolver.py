@@ -10,12 +10,19 @@ BOARD_SIZE = len(board) #We can assume the board width = height
 db = sql.connect('data/dictionary')
 cursor = db.cursor()
 
+words = {}
+
 def getValidWords(chars):
 	validWords = []
 	cursor.execute("SELECT word FROM words WHERE word LIKE \'" + chars + "%\'")
 	for row in cursor:
-		if len(row[0]) <= BOARD_SIZE:
-			validWords.append(row[0])
+		#Words must have a valid number of letters depending on board size
+		if len(row[0]) <= BOARD_SIZE*BOARD_SIZE:
+			isValid = True
+			for char in row[0]:
+				if not any(char in boardRow for boardRow in board):
+					isValid = False
+			if(isValid): validWords.append(row[0])
 	return validWords
 
 def getLetterAt(coord):
@@ -40,24 +47,21 @@ def getAdjacentCoords(x, y):
 
 	return coords
 
-def findWord(coords):
-	print("")
+def getWords(x, y, testWordBase):
+	coords = getAdjacentCoords(x, y)
+	startChar = getLetterAt([x, y])
+	for coord in coords:
+		testWord = testWordBase + getLetterAt(coord)
+		validWords = getValidWords(testWord)
+		if len(validWords) > 0: words[testWord] = validWords
 
-def findWords(board):
-	testWord = ""
-	for i in range(BOARD_SIZE):
-		for j in range(BOARD_SIZE):
-			startChar = getLetterAt(i, j)
-			print(startChar)
+		if len(testWord) < 2: getWords(coord[0], coord[1], testWord)
 
 for x in range(BOARD_SIZE):
 	for y in range(BOARD_SIZE):
-		coords = getAdjacentCoords(x, y)
-		startChar = getLetterAt([x, y])
+		getWords(x, y, getLetterAt([x, y]))
 
-		for coord in coords:
-			testWord = startChar + getLetterAt(coord)
-			print(getValidWords(testWord))
+print(words)
 
 db.commit()
 db.close()
