@@ -54,6 +54,18 @@ def areAdjacent(coord1, coord2):
 	'''Checks if two coordinates are adjacent'''
 	return coord2 in getAdjacentCoords(coord1[0], coord1[1])
 
+def areCharsAdjacent(char1, char2):
+	'''Checks if two characters are adjacent to each other
+	in any location on the board'''
+	char1PosList = getCharPositions(char1)
+	char2PosList = getCharPositions(char2)
+
+	for pos1 in char1PosList:
+		pos1Adj = getAdjacentCoords(pos1[0], pos1[1])
+		for pos in pos1Adj:
+			if pos in char2PosList: return True
+	return False
+
 def getAdjacentCoords(x, y):
 	'''Gets a list of adjacent coordinates for the given set of coordinates'''
 	if (x, y) in adjacentCoords:
@@ -103,7 +115,6 @@ for letter in ALPHABET:
 	if not charPositions == None:
 		letterPositions[letter] = getCharPositions(letter)
 
-print(areAdjacent((3, 2), (3, 3)))
 #Check possible words for each starting position
 #for x in range(BOARD_SIZE):
 #	for y in range(BOARD_SIZE):
