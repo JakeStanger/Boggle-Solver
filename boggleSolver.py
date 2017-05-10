@@ -2,10 +2,10 @@ import sqlite3 as sql
 
 #Constants
 #Hard-coded board
-board = (('x', 'a', 'c', 't'),
-		 ('x', 'd', 'y', 'l'),
-		 ('x', 'o', 'p', 'x'),
-		 ('r', 'e', 't', 'x'))
+board = (('g', 'e', 't', 'b'),
+		 ('l', 'g', 'g', 'o'),
+		 ('e', 'd', 'm', 'y'),
+		 ('e', 'd', 'u', 'd'))
 
 BOARD_SIZE = len(board) #We can assume the board width = height
 
@@ -19,6 +19,8 @@ cursor = db.cursor()
 words = {}
 adjacentCoords = {}
 letterPositions = {}
+
+results = []
 
 def getValidWords(chars):
 	'''Gets a list of words starting with the given character sequence
@@ -37,6 +39,7 @@ def getValidWords(chars):
 
 def getCharPositions(char):
 	'''Gets all the positions of a given character on the board'''
+	#Check if any of the character actually exist on the board
 	if not any(char in boardRow for boardRow in board):
 		return None
 	else:
@@ -60,6 +63,10 @@ def areCharsAdjacent(char1, char2):
 	char1PosList = getCharPositions(char1)
 	char2PosList = getCharPositions(char2)
 
+	#If the chars do not exist, then they're not adjacent
+	if char1PosList == None or char2PosList == None:
+		return False
+
 	for pos1 in char1PosList:
 		pos1Adj = getAdjacentCoords(pos1[0], pos1[1])
 		for pos in pos1Adj:
@@ -74,22 +81,24 @@ def getAdjacentCoords(x, y):
 	coords = []
 	#Check each surrounding coordinate lies on the board
 	if x > 0:
-		coords.append((x-1, y))
-		if y > 0: coords.append((x-1, y-1))
-		if y < BOARD_SIZE-1: coords.append((x-1, y+1))
+		coords.append((x-1, y)) #Centre left
+		if y > 0: coords.append((x-1, y-1)) #Top left
+		if y < BOARD_SIZE-1: coords.append((x-1, y+1)) #Bottom right
 	if x < BOARD_SIZE-1:
-		coords.append((x+1, y))
-		if y > 0: coords.append((x+1, y-1))
-		if y < BOARD_SIZE-1: coords.append((x+1, y+1))
-	if y > 0: coords.append((x, y-1))
-	if y < BOARD_SIZE-1: coords.append((x, y+1))
+		coords.append((x+1, y)) #Centre right
+		if y > 0: coords.append((x+1, y-1)) #Top right
+		if y < BOARD_SIZE-1: coords.append((x+1, y+1)) #Top right
+	if y > 0: coords.append((x, y-1)) #Centre top
+	if y < BOARD_SIZE-1: coords.append((x, y+1)) #Centre bottom
 
 	adjacentCoords[(x, y)] = coords
 	return coords
 
 def getWords(x, y, testWordBase, prevCoords):
 	'''Gets a list of valid words for the given coordinate
-	and pre-assembled set of characters'''
+	and pre-assembled set of characters.
+	This function only recurs once and simply acts as a filter;
+	in other words the test word will only ever be 2 characters long.'''
 	coords = getAdjacentCoords(x, y)
 	startChar = getLetterAt((x, y))
 	if not (x, y) in prevCoords:
@@ -104,7 +113,7 @@ def getWords(x, y, testWordBase, prevCoords):
 				words[testWord] = validWords
 				words.pop(testWordBase, None) #Remove old entry
 
-				if len(testWord) < 3:
+				if len(testWord) < 1:
 					prevCoords.append((x, y))
 					getWords(coord[0], coord[1], testWord, prevCoords)
 
@@ -115,12 +124,26 @@ for letter in ALPHABET:
 	if not charPositions == None:
 		letterPositions[letter] = getCharPositions(letter)
 
-#Check possible words for each starting position
-#for x in range(BOARD_SIZE):
-#	for y in range(BOARD_SIZE):
-	#	getWords(x, y, getLetterAt((x, y)), [])
+#Check possible words for each starting position.
+#Filters possible words to ones with at least 2 characters
+#in the correct order.
+for x in range(BOARD_SIZE):
+	for y in range(BOARD_SIZE):
+		getWords(x, y, getLetterAt((x, y)), [])
 
-print(words)
+#Check remaining words to make sure each of their
+#characters are adjacent.
+for key in words:
+	for word in words[key]:
+		isValid = True
+		for i in range(len(word)-1):
+			if not areCharsAdjacent(word[i], word[i+1]):
+				isValid = False
+				break
+		if isValid:
+			results.append(word)
+
+print(results)
 
 db.commit()
 db.close()
