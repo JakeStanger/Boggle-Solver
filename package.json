@@ -1,0 +1,9 @@
+{
+  "name"    : "Boggle Solver",
+  "version" : "1.0.0",
+  "main"    : "main.js",
+  "dependencies": {
+    "request-promise": "*",
+    "electron-prebuilt": "*"
+  }
+}

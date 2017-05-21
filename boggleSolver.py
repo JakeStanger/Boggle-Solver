@@ -1,13 +1,26 @@
 import sqlite3 as sql
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
+
+@app.route('/')
+def index(name=None):
+    return render_template('index.html',name=name)
 
 #Constants
 #Hard-coded board
-board = (('g', 'e', 't', 'b'),
-		 ('l', 'g', 'g', 'o'),
-		 ('e', 'd', 'm', 'y'),
-		 ('e', 'd', 'u', 'd'))
+# board = (('t', 'h', 'i', 's', 'g', 'r'),
+# 		 ('i', 'd', 'i', 'a', 'l', 'a'),
+# 		 ('r', 'g', 'e', 'r', 't', 'h'),
+# 		 ('a', 'n', 'i', 't', 'w', 'a'),
+# 		 ('s', 'p', 'r', 'i', 'o', 'r'),
+# 		 ('t', 'o', 't', 'h', 'i', 's'))
 
-BOARD_SIZE = len(board) #We can assume the board width = height
+board = (('i', 'e', 'o'),
+		('r', 'd', 'l'),
+		('e', 't', 'a'))
+
+BOARD_SIZE = 0
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 
@@ -19,8 +32,6 @@ cursor = db.cursor()
 words = {}
 adjacentCoords = {}
 letterPositions = {}
-
-results = []
 
 def getValidWords(chars):
 	'''Gets a list of words starting with the given character sequence
@@ -117,33 +128,47 @@ def getWords(x, y, testWordBase, prevCoords):
 					prevCoords.append((x, y))
 					getWords(coord[0], coord[1], testWord, prevCoords)
 
+@app.route('/boggleSolver.py', methods=['GET', 'POST'])
+def boggleSolve():
+	data = request.get_data()
+	print(data) #GOTTA DO THE STUFF WITH THIS ALSO WRITING
+	BOARD_SIZE = len(board) #We can assume the board width = height
+	results = []
+	#Find position of each character on the board
+	for letter in ALPHABET:
+		charPositions = getCharPositions(letter)
+		if not charPositions == None:
+			letterPositions[letter] = getCharPositions(letter)
+
+	#Check possible words for each starting position.
+	#Filters possible words to ones with at least 2 characters
+	#in the correct order.
+	for x in range(BOARD_SIZE):
+		for y in range(BOARD_SIZE):
+			getWords(x, y, getLetterAt((x, y)), [])
+
+	#Check remaining words to make sure each of their
+	#characters are adjacent.
+	for key in words:
+		for word in words[key]:
+			isValid = True
+			for i in range(len(word)-1):
+				if not areCharsAdjacent(word[i], word[i+1]):
+					isValid = False
+					break
+			if isValid:
+				results.append(word)
+
+	print(results)
+	print(len(results), "words")
+
+	db.commit()
+
+	return str(results)
+
 #--START OF PROGRAM--
-#Find position of each character on the board
-for letter in ALPHABET:
-	charPositions = getCharPositions(letter)
-	if not charPositions == None:
-		letterPositions[letter] = getCharPositions(letter)
+if __name__ == "__main__":
+	app.run()
+	app.debug = True
 
-#Check possible words for each starting position.
-#Filters possible words to ones with at least 2 characters
-#in the correct order.
-for x in range(BOARD_SIZE):
-	for y in range(BOARD_SIZE):
-		getWords(x, y, getLetterAt((x, y)), [])
-
-#Check remaining words to make sure each of their
-#characters are adjacent.
-for key in words:
-	for word in words[key]:
-		isValid = True
-		for i in range(len(word)-1):
-			if not areCharsAdjacent(word[i], word[i+1]):
-				isValid = False
-				break
-		if isValid:
-			results.append(word)
-
-print(results)
-
-db.commit()
-db.close()
+	db.close()

@@ -1,0 +1,110 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>Boggle Solver</title>
+	<!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<!-- jQuery library -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<!-- Latest compiled JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+	<script>
+	function createTable()
+	{
+		$('#table').empty();
+
+		var size = $('#sizeSelect option:selected')[0].value;
+		for(var i = 0; i < size; i++)
+		{
+			$('#table').append(`<row id=tr${i}></row><br>`);
+			for(var j = 0; j < size; j++)
+			{
+				$(`#tr${i}`).append(`<td class="span1" id=tr${i}td${j}><input type="text" size="1" maxlength="1" class="form-control" id="text${i}-${j}"></td>`);
+			}
+		}
+	}
+
+	function getBoardAsString()
+	{
+		var board = "";
+
+		$('#table').children().each(function() {
+	    $(this).children().each(function() {
+				board += $(this).find('input').val() + "-";
+			});
+			board = board.replace(/.$/,"|");
+		});
+		board = board.replace(/.$/,"");
+		return board;
+	}
+
+	function solveBoard()
+	{
+		data = JSON.stringify({'board': getBoardAsString()})
+		console.log(data)
+		$.ajax({
+        type: "POST",
+        url: "/boggleSolver.py",
+        data: data,
+				dataType: 'json',
+        success: function(response) {
+					$('#results').html(response);
+				}
+    });
+	}
+
+	function randomFill()
+	{
+		var ALPHABET = 'abcdefghijklmnopqrstuvwxyz';
+
+		$('#table').children().each(function() {
+	    $(this).children().each(function() {
+				$(this).find('input').val(ALPHABET[Math.floor(Math.random() * ALPHABET.length)]);
+			});
+		});
+	}
+	</script>
+	<style>
+		body {
+			padding: 50px;
+		}
+
+		.row {
+			padding-bottom: 20px;
+			background-color: #eee;
+		}
+
+		input .form-control {
+			max-width: 20px;
+		}
+	</style>
+</head>
+<body onload="createTable()">
+	<div class="row">
+		<div class="col-md-12">
+			<div class="col-md-2">
+				<select class="form-control" id="sizeSelect">
+					<option value='' disabled selected style='display:none;'>Board size:</option>")
+					<option value="3">3x3</option>
+					<option value="4">4x4</option>
+					<option value="5">5x5</option>
+					<option value="6">6x6</option>
+					<option value="7">7x7</option>
+					<option value="8">8x8</option>
+				</select>
+			</div>
+			<div class="col-md-4">
+				<button type="button" class="btn btn-primary" onclick="createTable()">Update Board Size</button>
+				<button type="button" class="btn btn-primary" onclick="randomFill()">Random Fill</button>
+				<button type="button" class="btn btn-primary" onclick="solveBoard()">Solve</button>
+				<button type="button" class="btn btn-primary" onclick="getBoardAsString()">Debug</button>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6" id="table"></div>
+		<div class="col-md-6" id="results"></div>
+	</div>
+</body>
+</html>
