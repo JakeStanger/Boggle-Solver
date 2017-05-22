@@ -8,19 +8,6 @@ app = Flask(__name__)
 def index(name=None):
     return render_template('index.html',name=name)
 
-#Constants
-#Hard-coded board
-# board = (('t', 'h', 'i', 's', 'g', 'r'),
-# 		 ('i', 'd', 'i', 'a', 'l', 'a'),
-# 		 ('r', 'g', 'e', 'r', 't', 'h'),
-# 		 ('a', 'n', 'i', 't', 'w', 'a'),
-# 		 ('s', 'p', 'r', 'i', 'o', 'r'),
-# 		 ('t', 'o', 't', 'h', 'i', 's'))
-
-# board = (('i', 'e', 'o'),
-# 		('r', 'd', 'l'),
-# 		('e', 't', 'a'))
-
 board = []
 BOARD_SIZE = 0
 

@@ -10,35 +10,51 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
 	<script>
+	/**
+	* Create empty grid of selected size
+	*/
 	function createTable()
 	{
-		$('#table').empty();
+		$('#table').empty(); //Remove previous cells
 
 		var size = $('#sizeSelect option:selected')[0].value;
+		if(size == undefined) size = 4; //Default size
 		for(var i = 0; i < size; i++)
 		{
-			$('#table').append(`<row id=tr${i}></row><br>`);
+			$('#table').append(`<row id=tr${i}></row><br>`); //Add rows
 			for(var j = 0; j < size; j++)
 			{
-				$(`#tr${i}`).append(`<td class="span1" id=tr${i}td${j}><input type="text" size="1" maxlength="1" class="form-control" id="text${i}-${j}"></td>`);
+				//Add columns
+				$(`#tr${i}`).append(`<td class="span1" id=tr${i}td${j}>
+														 <input type="text" size="1" maxlength="1" class="form-control" id="text${i}-${j}">
+														 </td>`);
 			}
 		}
 	}
 
+	/**
+	* Get board contents and return it as a single string.
+	* Columns are separated by a dash (-) and rows by a pipe (|)
+	*/
 	function getBoardAsString()
 	{
 		var board = "";
 
 		$('#table').children().each(function() {
 	    $(this).children().each(function() {
-				board += $(this).find('input').val() + "-";
+				board += $(this).find('input').val() + "-"; //Get value of each cell
 			});
-			board = board.replace(/.$/,"|");
+			board = board.replace(/.$/,"|"); //Remove trailing character
 		});
-		board = board.replace(/.$/,"");
+		board = board.replace(/.$/,""); //Remove trailing character
 		return board;
 	}
 
+	/**
+	* Sends an AJAX request to the python script
+	* in order to calculate the possible words.
+	* Writes the words to the webpage.
+	*/
 	function solveBoard()
 	{
 		data = JSON.stringify({'board': getBoardAsString()})
@@ -61,6 +77,9 @@
     });
 	}
 
+	/**
+	* Randomly fill the existing grid with letters.
+	*/
 	function randomFill()
 	{
 		var ALPHABET = 'abcdefghijklmnopqrstuvwxyz';
