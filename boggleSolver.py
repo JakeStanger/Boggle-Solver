@@ -1,5 +1,6 @@
 import sqlite3 as sql
 from flask import Flask, render_template, request
+import ast
 
 app = Flask(__name__)
 
@@ -16,10 +17,11 @@ def index(name=None):
 # 		 ('s', 'p', 'r', 'i', 'o', 'r'),
 # 		 ('t', 'o', 't', 'h', 'i', 's'))
 
-board = (('i', 'e', 'o'),
-		('r', 'd', 'l'),
-		('e', 't', 'a'))
+# board = (('i', 'e', 'o'),
+# 		('r', 'd', 'l'),
+# 		('e', 't', 'a'))
 
+board = []
 BOARD_SIZE = 0
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
@@ -130,10 +132,20 @@ def getWords(x, y, testWordBase, prevCoords):
 
 @app.route('/boggleSolver.py', methods=['GET', 'POST'])
 def boggleSolve():
-	data = request.get_data()
-	print(data) #GOTTA DO THE STUFF WITH THIS ALSO WRITING
+	global board
+	global BOARD_SIZE
+
+	#print(request.get_data())
+	data = ast.literal_eval(request.get_data().decode("utf-8"))['board']
+
+	board = []
+	rows = data.split("|")
+	for row in rows:
+		board.append(row.split("-"))
+
 	BOARD_SIZE = len(board) #We can assume the board width = height
 	results = []
+
 	#Find position of each character on the board
 	for letter in ALPHABET:
 		charPositions = getCharPositions(letter)
@@ -159,12 +171,9 @@ def boggleSolve():
 			if isValid:
 				results.append(word)
 
-	print(results)
-	print(len(results), "words")
-
 	db.commit()
 
-	return str(results)
+	return ",".join(str(word) for word in results)
 
 #--START OF PROGRAM--
 if __name__ == "__main__":

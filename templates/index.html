@@ -42,14 +42,21 @@
 	function solveBoard()
 	{
 		data = JSON.stringify({'board': getBoardAsString()})
-		console.log(data)
 		$.ajax({
         type: "POST",
         url: "/boggleSolver.py",
         data: data,
-				dataType: 'json',
         success: function(response) {
-					$('#results').html(response);
+					$('#results').empty();
+					words = response.split(",")
+					for(i in words)
+					{
+						word = words[i]
+						$('#results').append(`<p>${word}</p>`);
+					}
+				},
+				error: function(err) {
+					console.log(err);
 				}
     });
 	}
@@ -98,13 +105,12 @@
 				<button type="button" class="btn btn-primary" onclick="createTable()">Update Board Size</button>
 				<button type="button" class="btn btn-primary" onclick="randomFill()">Random Fill</button>
 				<button type="button" class="btn btn-primary" onclick="solveBoard()">Solve</button>
-				<button type="button" class="btn btn-primary" onclick="getBoardAsString()">Debug</button>
 			</div>
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-md-6" id="table"></div>
-		<div class="col-md-6" id="results"></div>
+		<div class="col-md-4" id="table"></div>
+		<div class="col-md-8" id="results"></div>
 	</div>
 </body>
 </html>
