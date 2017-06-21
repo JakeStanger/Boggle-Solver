@@ -7,7 +7,7 @@ cursor = db.cursor()
 cursor.execute("CREATE TABLE words(word TEXT UNIQUE)")
 
 
-with open("words.txt", 'r'), open("words2.txt", "r"), open("words3.txt", "r") as words:
+with open("dictionary.txt", 'r') as words:
 	for word in words:
 		cursor.execute('''INSERT OR IGNORE INTO words(word) VALUES(:word)''', {'word':word.replace("\n", "").lower()})
 

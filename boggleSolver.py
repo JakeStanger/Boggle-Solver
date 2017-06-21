@@ -103,7 +103,7 @@ def getWords(x, y, testWordBase, prevCoords):
 	startChar = getLetterAt((x, y))
 	if not (x, y) in prevCoords:
 		for coord in coords:
-			testWord = testWordBase + getLetterAt(coord)
+			testWord = testWordBase + getLetterAt(coord) #TODO ---Fix bug on this line---
 			if testWord in words:
 				validWords = words[testWord]
 			else:
