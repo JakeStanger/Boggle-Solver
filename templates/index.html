@@ -63,12 +63,17 @@
         url: "/boggleSolver.py",
         data: data,
         success: function(response) {
-					$('#results').empty();
-					words = response.split(",")
-					for(i in words)
+					for (var i = 1; i < 7; i++) $(`#results${i}`).empty();
+					var words = response.split(",").sort()
+
+					var j = 1;
+					for(var i in words)
 					{
 						word = words[i]
-						$('#results').append(`<p>${word}</p>`);
+						$(`#results${j}`).append(`<p>${word}</p>`);
+
+						if(j < 6) j++;
+						else j = 1;
 					}
 				},
 				error: function(err) {
@@ -129,7 +134,14 @@
 	</div>
 	<div class="row">
 		<div class="col-md-4" id="table"></div>
-		<div class="col-md-8" id="results"></div>
+		<div class="col-md-8" id="results">
+			<div class="col-sm-2" id="results1"></div>
+			<div class="col-sm-2" id="results2"></div>
+			<div class="col-sm-2" id="results3"></div>
+			<div class="col-sm-2" id="results4"></div>
+			<div class="col-sm-2" id="results5"></div>
+			<div class="col-sm-2" id="results6"></div>
+		</div>
 	</div>
 </body>
 </html>
