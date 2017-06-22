@@ -22,6 +22,14 @@ words = {}
 adjacentCoords = {}
 letterPositions = {}
 
+def getWordScore(word):
+    length = len(word)
+    if length <= 4: return 1
+    if length == 5: return 2
+    if length == 6: return 3
+    if length == 7: return 5
+    if length >= 8: return 11
+
 def getValidWords(chars):
 	'''Gets a list of words starting with the given character sequence
 	where the required letters exist on the board.'''
@@ -94,44 +102,26 @@ def getAdjacentCoords(x, y):
 	adjacentCoords[(x, y)] = coords
 	return coords
 
-def getWords(x, y, testWordBase, prevCoords):
-	'''Gets a list of valid words for the given coordinate
-	and pre-assembled set of characters.
-	This function only recurs once and simply acts as a filter;
-	in other words the test word will only ever be 2 characters long.'''
+def getWords(x, y, testWordBase):
+	'''Gets a list of possible words for every possible 2 character
+	combination starting at the given co-ordinate'''
 	coords = getAdjacentCoords(x, y)
-	startChar = getLetterAt((x, y))
-	if not (x, y) in prevCoords:
-		for coord in coords:
-			testWord = testWordBase + getLetterAt(coord) #TODO ---Fix bug on this line---
-			if testWord in words:
-				validWords = words[testWord]
-			else:
-				validWords = getValidWords(testWord)
+	for coord in coords:
+		testWord = testWordBase + getLetterAt(coord) #TODO Fix bug on this line
+		if testWord in words:
+			validWords = words[testWord]
+		else:
+			validWords = getValidWords(testWord)
 
-			if len(validWords) > 0:
-				words[testWord] = validWords
-				words.pop(testWordBase, None) #Remove old entry
-
-				if len(testWord) < 1:
-					prevCoords.append((x, y))
-					getWords(coord[0], coord[1], testWord, prevCoords)
-
-def getWordScore(word):
-    length = len(word)
-    if length <= 4: return 1
-    if length == 5: return 2
-    if length == 6: return 3
-    if length == 7: return 5
-    if length >= 8: return 11
-
+		if len(validWords) > 0:
+			words[testWord] = validWords
+			words.pop(testWordBase, None) #Remove old entry
 
 @app.route('/boggleSolver.py', methods=['GET', 'POST'])
 def boggleSolve():
 	global board
 	global BOARD_SIZE
 
-	#print(request.get_data())
 	data = ast.literal_eval(request.get_data().decode("utf-8"))['board']
 
 	board = []
@@ -153,12 +143,13 @@ def boggleSolve():
 	#in the correct order.
 	for x in range(BOARD_SIZE):
 		for y in range(BOARD_SIZE):
-			getWords(x, y, getLetterAt((x, y)), [])
+			getWords(x, y, getLetterAt((x, y)))
 
 	#Check remaining words to make sure each of their
 	#characters are adjacent.
 	for key in words:
 		for word in words[key]:
+			prevCoords = []
 			isValid = True
 			for i in range(len(word)-1):
 				if not areCharsAdjacent(word[i], word[i+1]):

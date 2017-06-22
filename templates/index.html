@@ -72,7 +72,8 @@
 						info = words[i].split(":")
 						word = info[0]
 						score = info[1]
-						$(`#results${j}`).append(`<p class="btn btn-default btn-block" data-toggle="tooltip" title="${score} points">${word}</p><br>`);
+						$(`#results${j}`).append(`<p class="btn btn-default btn-block"
+								data-toggle="tooltip" title="${score} points">${word}</p><br>`);
 
 						if(j < 6) j++;
 						else j = 1;
