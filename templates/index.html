@@ -72,11 +72,13 @@
 						info = words[i].split(":")
 						word = info[0]
 						score = info[1]
-						$(`#results${j}`).append(`<a href="#" data-toggle="tooltip" title="${score} points">${word}</p>`);
+						$(`#results${j}`).append(`<p class="btn btn-default btn-block" data-toggle="tooltip" title="${score} points">${word}</p><br>`);
 
 						if(j < 6) j++;
 						else j = 1;
 					}
+
+					$('[data-toggle="tooltip"]').tooltip(); //Enable tooltips
 				},
 				error: function(err) {
 					console.log(err);
@@ -145,10 +147,5 @@
 			<div class="col-sm-2" id="results6"></div>
 		</div>
 	</div>
-	<script>
-		$(document).ready(function() {
-			$('[data-toggle="tooltip"]').tooltip();
-		});
-	</script>
 </body>
 </html>
