@@ -117,6 +117,15 @@ def getWords(x, y, testWordBase, prevCoords):
 					prevCoords.append((x, y))
 					getWords(coord[0], coord[1], testWord, prevCoords)
 
+def getWordScore(word):
+    length = len(word)
+    if length <= 4: return 1
+    if length == 5: return 2
+    if length == 6: return 3
+    if length == 7: return 5
+    if length >= 8: return 11
+
+
 @app.route('/boggleSolver.py', methods=['GET', 'POST'])
 def boggleSolve():
 	global board
@@ -160,7 +169,7 @@ def boggleSolve():
 
 	db.commit()
 
-	return ",".join(str(word) for word in results)
+	return ",".join(str(word) + ":" + str(getWordScore(word)) for word in results)
 
 #--START OF PROGRAM--
 if __name__ == "__main__":

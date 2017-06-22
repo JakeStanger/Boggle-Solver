@@ -69,8 +69,10 @@
 					var j = 1;
 					for(var i in words)
 					{
-						word = words[i]
-						$(`#results${j}`).append(`<p>${word}</p>`);
+						info = words[i].split(":")
+						word = info[0]
+						score = info[1]
+						$(`#results${j}`).append(`<a href="#" data-toggle="tooltip" title="${score} points">${word}</p>`);
 
 						if(j < 6) j++;
 						else j = 1;
