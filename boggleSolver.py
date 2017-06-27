@@ -20,6 +20,7 @@ cursor = db.cursor()
 #History
 words = {}
 adjacentCoords = {}
+adjacentLetters = {}
 letterPositions = {}
 
 def getWordScore(word):
@@ -65,7 +66,7 @@ def areAdjacent(coord1, coord2):
 	'''Checks if two coordinates are adjacent'''
 	return coord2 in getAdjacentCoords(coord1[0], coord1[1])
 
-def areCharsAdjacent(char1, char2):
+def getAdjacentCharPositions(char1, char2):
 	'''Checks if two characters are adjacent to each other
 	in any location on the board'''
 	char1PosList = getCharPositions(char1)
@@ -73,13 +74,15 @@ def areCharsAdjacent(char1, char2):
 
 	#If the chars do not exist, then they're not adjacent
 	if char1PosList == None or char2PosList == None:
-		return False
+		return None
 
+	returnData = []
 	for pos1 in char1PosList:
 		pos1Adj = getAdjacentCoords(pos1[0], pos1[1])
 		for pos in pos1Adj:
-			if pos in char2PosList: return True
-	return False
+			if pos in char2PosList: returnData.append((pos1, pos))
+	if len(returnData) > 0: return returnData
+	else: return None
 
 def getAdjacentCoords(x, y):
 	'''Gets a list of adjacent coordinates for the given set of coordinates'''
@@ -102,12 +105,33 @@ def getAdjacentCoords(x, y):
 	adjacentCoords[(x, y)] = coords
 	return coords
 
+def getAdjacentChars(x, y):
+	'''Gets a list of adjacent letters for the given set of coordinates'''
+	if (x, y) in adjacentLetters:
+		return adjacentLetters[(x, y)]
+
+	coords = getAdjacentCoords(x, y)
+
+	returnData = []
+	for coord in coords: returnData.append(getLetterAt(coord))
+
+	adjacentLetters[(x, y)] = returnData
+	return returnData
+
+def findCharOnBoard(char):
+	occurs = []
+	for i in range(len(board)):
+		indices = [j for j, x in enumerate(board[i]) if x == char]
+		print(indices)
+		for k in range(len(indices)): occurs.append((i, indices[k]))
+	return occurs
+
 def getWords(x, y, testWordBase):
 	'''Gets a list of possible words for every possible 2 character
 	combination starting at the given co-ordinate'''
 	coords = getAdjacentCoords(x, y)
 	for coord in coords:
-		testWord = testWordBase + getLetterAt(coord) #TODO Fix bug on this line
+		testWord = testWordBase + getLetterAt(coord) #TODO Fix bug on this line (3x3 grid)
 		if testWord in words:
 			validWords = words[testWord]
 		else:
@@ -130,6 +154,7 @@ def boggleSolve():
 		board.append(row.split("-"))
 
 	BOARD_SIZE = len(board) #We can assume the board width = height
+
 	results = []
 
 	#Find position of each character on the board
@@ -147,14 +172,71 @@ def boggleSolve():
 
 	#Check remaining words to make sure each of their
 	#characters are adjacent.
+	#words = {"DEBUG": ["bubblegum"]}
 	for key in words:
 		for word in words[key]:
-			prevCoords = []
+			locationHistory = []
 			isValid = True
 			for i in range(len(word)-1):
-				if not areCharsAdjacent(word[i], word[i+1]):
+				char = word[i]
+				locations = findCharOnBoard(char)
+				print(char, "--", locations)
+
+				anyLocationValid = False
+				for location in locations:
+					#print(locationHistory)
+					#if location in locationHistory:
+						#break
+
+					adjacentChars = getAdjacentChars(location[0], location[1])
+					if word[i+1] in adjacentChars:
+						anyLocationValid = True
+						locationHistory.append(location)
+						break
+					print(word, char, anyLocationValid, word[i+1], adjacentChars, location, word[:i])
+
+				print(anyLocationValid, "on", char)
+				if anyLocationValid == False:
+					print("Remove", word)
 					isValid = False
 					break
+
+				# positions = getAdjacentCharPositions(word[i], word[i+1])
+				#
+				# #Check letters are adjacent at all
+				# if positions == None:
+				# 	isValid = False
+				# 	break
+				#
+				# #print(positions)
+				#
+				# #validCheck = []
+				# for pos in positions:
+				# 	prevLength = len(validCheck)
+				# 	#Check we are not using an already used tile
+				# 	if pos[0] in prevCoords or pos[1] in prevCoords:
+				# 		validCheck.append(False)
+				# 		#break
+				#
+				# 	#Check the tile is adjacent to a previous one
+				# 	if len(prevCoords) > 0:
+				# 		print(word, prevCoords[-1], pos, word[:i])
+				# 		print(prevCoords)
+				# 		if not areAdjacent(pos[0], prevCoords[-1]):
+				# 			validCheck.append(False)
+				# 			#break
+				#
+				# 	if len(validCheck) == prevLength: validCheck.append(True)
+				#
+				# 	prevCoords.append(pos[0])
+				# 	#prevCoords.append(pos[1])
+
+			#print(validCheck)
+
+			# if not True in validCheck:
+			# 	isValid = False
+			# 	break
+
 			if isValid:
 				results.append(word)
 
