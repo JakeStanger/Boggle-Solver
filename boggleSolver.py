@@ -146,7 +146,6 @@ def getWords(x, y, testWordBase):
 
 def isWordValid(word, i, locationHistory, locations):
 	'''Recurs to check if the given word is valid'''
-
 	#Crop history length (there seems to be some issue with appending otherwise)
 	locationHistory = locationHistory[:i]
 
