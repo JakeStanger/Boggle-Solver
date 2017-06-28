@@ -112,8 +112,12 @@ def getAdjacentChars(x, y):
 
 	coords = getAdjacentCoords(x, y)
 
-	returnData = []
-	for coord in coords: returnData.append(getLetterAt(coord))
+	returnData = {}
+	for coord in coords:
+		char = getLetterAt(coord)
+		if not char in returnData:
+			returnData[char] = [coord]
+		else: returnData[char].append(coord)
 
 	adjacentLetters[(x, y)] = returnData
 	return returnData
@@ -122,7 +126,6 @@ def findCharOnBoard(char):
 	occurs = []
 	for i in range(len(board)):
 		indices = [j for j, x in enumerate(board[i]) if x == char]
-		print(indices)
 		for k in range(len(indices)): occurs.append((i, indices[k]))
 	return occurs
 
@@ -140,6 +143,36 @@ def getWords(x, y, testWordBase):
 		if len(validWords) > 0:
 			words[testWord] = validWords
 			words.pop(testWordBase, None) #Remove old entry
+
+def isWordValid(word, i, locationHistory, locations):
+	'''Recurs to check if the given word is valid'''
+
+	#Crop history length (there seems to be some issue with appending otherwise)
+	locationHistory = locationHistory[:i]
+
+	anyLocationValid = False
+	for location in locations:
+		if not location in locationHistory:
+			adjacentChars = getAdjacentChars(location[0], location[1])
+
+			if word[i+1] in adjacentChars and (word[i-1] in adjacentChars or i-1 < 0):
+				if len(locationHistory) == 0 or areAdjacent(locationHistory[-1], location):
+					anyPossibleWay = False
+					for nextPos in adjacentChars[word[i+1]]:
+						if location in getAdjacentCoords(nextPos[0], nextPos[1]):
+							if not nextPos in locationHistory:
+								anyPossibleWay = True
+
+					if not anyPossibleWay: continue
+
+					#Max recursion depth
+					if i < len(word)-2:
+						locationHistory.append(location)
+						anyLocationValid = isWordValid(word, i+1, locationHistory, adjacentChars[word[i+1]])
+						if anyLocationValid: return True
+					else: return True
+
+	return anyLocationValid
 
 @app.route('/boggleSolver.py', methods=['GET', 'POST'])
 def boggleSolve():
@@ -172,73 +205,10 @@ def boggleSolve():
 
 	#Check remaining words to make sure each of their
 	#characters are adjacent.
-	#words = {"DEBUG": ["bubblegum"]}
 	for key in words:
 		for word in words[key]:
-			locationHistory = []
-			isValid = True
-			for i in range(len(word)-1):
-				char = word[i]
-				locations = findCharOnBoard(char)
-				print(char, "--", locations)
-
-				anyLocationValid = False
-				for location in locations:
-					#print(locationHistory)
-					#if location in locationHistory:
-						#break
-
-					adjacentChars = getAdjacentChars(location[0], location[1])
-					if word[i+1] in adjacentChars:
-						anyLocationValid = True
-						locationHistory.append(location)
-						break
-					print(word, char, anyLocationValid, word[i+1], adjacentChars, location, word[:i])
-
-				print(anyLocationValid, "on", char)
-				if anyLocationValid == False:
-					print("Remove", word)
-					isValid = False
-					break
-
-				# positions = getAdjacentCharPositions(word[i], word[i+1])
-				#
-				# #Check letters are adjacent at all
-				# if positions == None:
-				# 	isValid = False
-				# 	break
-				#
-				# #print(positions)
-				#
-				# #validCheck = []
-				# for pos in positions:
-				# 	prevLength = len(validCheck)
-				# 	#Check we are not using an already used tile
-				# 	if pos[0] in prevCoords or pos[1] in prevCoords:
-				# 		validCheck.append(False)
-				# 		#break
-				#
-				# 	#Check the tile is adjacent to a previous one
-				# 	if len(prevCoords) > 0:
-				# 		print(word, prevCoords[-1], pos, word[:i])
-				# 		print(prevCoords)
-				# 		if not areAdjacent(pos[0], prevCoords[-1]):
-				# 			validCheck.append(False)
-				# 			#break
-				#
-				# 	if len(validCheck) == prevLength: validCheck.append(True)
-				#
-				# 	prevCoords.append(pos[0])
-				# 	#prevCoords.append(pos[1])
-
-			#print(validCheck)
-
-			# if not True in validCheck:
-			# 	isValid = False
-			# 	break
-
-			if isValid:
-				results.append(word)
+			isValid = isWordValid(word, 0, [], findCharOnBoard(word[0]))
+			if isValid: results.append(word)
 
 	db.commit()
 
