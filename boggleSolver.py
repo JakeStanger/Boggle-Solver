@@ -1,6 +1,7 @@
 import sqlite3 as sql
 from flask import Flask, render_template, request
 import ast
+import timeit
 
 app = Flask(__name__)
 
@@ -65,24 +66,6 @@ def getLetterAt(coord):
 def areAdjacent(coord1, coord2):
 	'''Checks if two coordinates are adjacent'''
 	return coord2 in getAdjacentCoords(coord1[0], coord1[1])
-
-def getAdjacentCharPositions(char1, char2):
-	'''Checks if two characters are adjacent to each other
-	in any location on the board'''
-	char1PosList = getCharPositions(char1)
-	char2PosList = getCharPositions(char2)
-
-	#If the chars do not exist, then they're not adjacent
-	if char1PosList == None or char2PosList == None:
-		return None
-
-	returnData = []
-	for pos1 in char1PosList:
-		pos1Adj = getAdjacentCoords(pos1[0], pos1[1])
-		for pos in pos1Adj:
-			if pos in char2PosList: returnData.append((pos1, pos))
-	if len(returnData) > 0: return returnData
-	else: return None
 
 def getAdjacentCoords(x, y):
 	'''Gets a list of adjacent coordinates for the given set of coordinates'''
@@ -151,32 +134,53 @@ def isWordValid(word, i, locationHistory, locations):
 
 	anyLocationValid = False
 	for location in locations:
-		if not location in locationHistory:
+		if not location in locationHistory: #Check tile not already used
 			adjacentChars = getAdjacentChars(location[0], location[1])
 
+			#Check next and previous letters are adjacent
 			if word[i+1] in adjacentChars and (word[i-1] in adjacentChars or i-1 < 0):
+				#Check current location is adjacent to previously added location
 				if len(locationHistory) == 0 or areAdjacent(locationHistory[-1], location):
+
+					#Check all possible positions of next char are valid
 					anyPossibleWay = False
 					for nextPos in adjacentChars[word[i+1]]:
+						#Check this location is adjacent
 						if location in getAdjacentCoords(nextPos[0], nextPos[1]):
+							#Check next position has not been used
 							if not nextPos in locationHistory:
 								anyPossibleWay = True
 
+					#If no tile for the next character is valid
+					#Then skip to the next location for this character
 					if not anyPossibleWay: continue
 
-					#Max recursion depth
+					#If less than max recursion depth
 					if i < len(word)-2:
 						locationHistory.append(location)
 						anyLocationValid = isWordValid(word, i+1, locationHistory, adjacentChars[word[i+1]])
 						if anyLocationValid: return True
-					else: return True
+					else: return True #Otherwise all is valid
 
 	return anyLocationValid
 
 @app.route('/boggleSolver.py', methods=['GET', 'POST'])
 def boggleSolve():
+	startTime = timeit.default_timer()
+
 	global board
 	global BOARD_SIZE
+
+	global words
+	global adjacentCoords
+	global adjacentLetters
+	global letterPositions
+
+	#Clear history
+	words = {}
+	adjacentCoords = {}
+	adjacentLetters = {}
+	letterPositions = {}
 
 	data = ast.literal_eval(request.get_data().decode("utf-8"))['board']
 
@@ -211,7 +215,9 @@ def boggleSolve():
 
 	db.commit()
 
-	return ",".join(str(word) + ":" + str(getWordScore(word)) for word in results)
+	elapsedTime = timeit.default_timer() - startTime
+
+	return ",".join(str(word) + ":" + str(getWordScore(word)) for word in results) + "-" + str(round(elapsedTime, 2))
 
 #--START OF PROGRAM--
 if __name__ == "__main__":

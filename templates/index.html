@@ -64,20 +64,27 @@
         data: data,
         success: function(response) {
 					for (var i = 1; i < 7; i++) $(`#results${i}`).empty();
-					var words = response.split(",").sort()
+					var words = response.split("-")[0].split(",").sort()
 
+					var time = response.split("-")[1]
+					var wordCount = words.length
+
+					var totalScore = 0
 					var j = 1;
 					for(var i in words)
 					{
 						info = words[i].split(":")
 						word = info[0]
 						score = info[1]
+						totalScore += parseInt(score)
 						$(`#results${j}`).append(`<p class="btn btn-default btn-block"
 								data-toggle="tooltip" title="${score} points">${word}</p><br>`);
 
 						if(j < 6) j++;
 						else j = 1;
 					}
+
+					$("#message").html(`<p>Found <b>${wordCount}</b> words in <b>${time}</b> seconds for a total of <b>${totalScore}</b> points.</p>`)
 
 					$('[data-toggle="tooltip"]').tooltip(); //Enable tooltips
 				},
@@ -133,12 +140,15 @@
 			<div class="col-md-4">
 				<button type="button" class="btn btn-primary" onclick="createTable()">Update Board Size</button>
 				<button type="button" class="btn btn-primary" onclick="randomFill()">Random Fill</button>
-				<button type="button" class="btn btn-primary" onclick="solveBoard()">Solve</button>
+				<button type="button" class="btn btn-success" onclick="solveBoard()">Solve</button>
 			</div>
 		</div>
 	</div>
 	<div class="row">
-		<div class="col-md-4" id="table"></div>
+		<div class="col-md-4" id="tablecol">
+			<div class="row" id="table"></div>
+			<div class="row" id="message"></div>
+		</div>
 		<div class="col-md-8" id="results">
 			<div class="col-sm-2" id="results1"></div>
 			<div class="col-sm-2" id="results2"></div>
