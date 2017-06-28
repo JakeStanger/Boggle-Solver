@@ -1,4 +1,0 @@
-hey here's a word
-are letters all on board yesno?
-first letter -> get adjacent -> is 2nd letter yesno? -> get list of adjacent occurences -> etc
-is all good yesno? -> add to list
