@@ -19,10 +19,19 @@ db = sql.connect('data/dictionary')
 cursor = db.cursor()
 
 #History
-words = {}
+#words = {}
 adjacentCoords = {}
 adjacentLetters = {}
 letterPositions = {}
+
+def getAllWords():
+	words = []
+	cursor.execute("SELECT word FROM words")
+	for row in cursor:
+		words.append(row[0])
+	return words
+
+words = {"words": getAllWords()}
 
 def getWordScore(word):
     length = len(word)
@@ -31,21 +40,6 @@ def getWordScore(word):
     if length == 6: return 3
     if length == 7: return 5
     if length >= 8: return 11
-
-def getValidWords(chars):
-	'''Gets a list of words starting with the given character sequence
-	where the required letters exist on the board.'''
-	validWords = []
-	cursor.execute("SELECT word FROM words WHERE word LIKE \'" + chars + "%\'")
-	for row in cursor:
-		#Words must have a valid number of letters depending on board size
-		if len(row[0]) <= BOARD_SIZE*BOARD_SIZE:
-			isValid = True
-			for char in row[0]:
-				if not char in letterPositions:
-					isValid = False
-			if(isValid): validWords.append(row[0])
-	return validWords
 
 def getCharPositions(char):
 	'''Gets all the positions of a given character on the board'''
@@ -112,21 +106,6 @@ def findCharOnBoard(char):
 		for k in range(len(indices)): occurs.append((i, indices[k]))
 	return occurs
 
-def getWords(x, y, testWordBase):
-	'''Gets a list of possible words for every possible 2 character
-	combination starting at the given co-ordinate'''
-	coords = getAdjacentCoords(x, y)
-	for coord in coords:
-		testWord = testWordBase + getLetterAt(coord) #TODO Fix bug on this line (3x3 grid)
-		if testWord in words:
-			validWords = words[testWord]
-		else:
-			validWords = getValidWords(testWord)
-
-		if len(validWords) > 0:
-			words[testWord] = validWords
-			words.pop(testWordBase, None) #Remove old entry
-
 def isWordValid(word, i, locationHistory, locations):
 	'''Recurs to check if the given word is valid'''
 	#Crop history length (there seems to be some issue with appending otherwise)
@@ -151,7 +130,7 @@ def isWordValid(word, i, locationHistory, locations):
 							if not nextPos in locationHistory:
 								anyPossibleWay = True
 
-					#If no tile for the next character is valid
+					#If no tile for the next character is validfgdgf
 					#Then skip to the next location for this character
 					if not anyPossibleWay: continue
 
@@ -177,7 +156,6 @@ def boggleSolve():
 	global letterPositions
 
 	#Clear history
-	words = {}
 	adjacentCoords = {}
 	adjacentLetters = {}
 	letterPositions = {}
@@ -198,13 +176,6 @@ def boggleSolve():
 		charPositions = getCharPositions(letter)
 		if not charPositions == None:
 			letterPositions[letter] = getCharPositions(letter)
-
-	#Check possible words for each starting position.
-	#Filters possible words to ones with at least 2 characters
-	#in the correct order.
-	for x in range(BOARD_SIZE):
-		for y in range(BOARD_SIZE):
-			getWords(x, y, getLetterAt((x, y)))
 
 	#Check remaining words to make sure each of their
 	#characters are adjacent.
