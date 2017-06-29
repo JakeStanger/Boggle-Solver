@@ -112,6 +112,7 @@ def getCharLocations(char):
 
 def isNextCharValid(adjacentChars, word, i, location, locationHistory):
 	'''Checks if any of the possible positions for the next char are valid.'''
+	I am confsued
 	isValid = False
 	for nextPos in adjacentChars[word[i+1]]:
 		#Check this location is adjacent
