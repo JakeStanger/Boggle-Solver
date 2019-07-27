@@ -2,6 +2,7 @@ import sqlite3 as sql
 from flask import Flask, render_template, request
 import ast
 import timeit
+import pkg_resources
 
 app = Flask(__name__)
 
@@ -20,7 +21,7 @@ BOARD_SIZE = 0
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 
 # Load database
-db = sql.connect('data/dictionary')
+db = sql.connect(pkg_resources.resource_filename('boggle_solver', 'data/dictionary'))
 cursor = db.cursor()
 
 # History
