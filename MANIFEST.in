@@ -1,0 +1,3 @@
+include boggle_solver/data/dictionary
+graft boggle_solver/templates
+global-exclude *.pyc
