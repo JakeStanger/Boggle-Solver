@@ -6,7 +6,7 @@ setup(
     packages=['boggle-solver'],
     include_package_data=True,
     zip_safe=False,
-    install_requires=['Flask', 'sqlite3'],
+    install_requires=['flask', 'sqlite3'],
     url='https://github.com/JakeStanger/Boggle-Solver',
     license='MIT',
     author='Jake Stanger',
