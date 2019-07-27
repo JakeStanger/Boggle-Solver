@@ -233,9 +233,13 @@ def boggleSolve():
     return ",".join(str(word) + ":" + str(getWordScore(word)) for word in results) + "-" + str(round(elapsedTime, 2))
 
 
-# --START OF PROGRAM--
-if __name__ == "__main__":
+def run():
     app.run()
     app.debug = True
 
     db.close()
+
+
+# --START OF PROGRAM--
+if __name__ == "__main__":
+    run()
