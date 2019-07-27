@@ -6,7 +6,7 @@ setup(
     packages=['boggle_solver'],
     include_package_data=True,
     zip_safe=False,
-    install_requires=['Flask'],
+    install_requires=['Flask', 'flup'],
     url='https://github.com/JakeStanger/Boggle-Solver',
     license='MIT',
     author='Jake Stanger',

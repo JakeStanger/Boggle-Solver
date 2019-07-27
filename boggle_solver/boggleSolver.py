@@ -1,8 +1,12 @@
 import sqlite3 as sql
-from flask import Flask, render_template, request
+import traceback
+
+from flup.server.fcgi import WSGIServer
+from flask import Flask, render_template, request, logging
 import ast
 import timeit
 import pkg_resources
+
 
 app = Flask(__name__)
 
@@ -235,8 +239,15 @@ def boggleSolve():
 
 
 def run():
-    app.run()
-    app.debug = True
+    # app.run()
+    # app.debug = True
+
+    try:
+        WSGIServer(app, bindAddress='./hello-world.sock', umask=0000).run()
+    except (KeyboardInterrupt, SystemExit, SystemError):
+        logging.info("Shutdown requested...exiting")
+    except Exception:
+        traceback.print_exc(file=sys.stdout)
 
     db.close()
 
